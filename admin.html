@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Gestão Multi-Cliente | Review Funnel</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- QRCode.js library for offline high-res QR Code generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-900 min-h-screen text-slate-100 font-sans antialiased">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            Review Funnel Admin
+            <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Multi-Cliente</span>
+          </span>
+          <span class="text-xs text-slate-400 block -mt-0.5">Triagem Inteligente de Avaliações Google</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button id="btnExportJson" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 border border-slate-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Exportar JSON
+        </button>
+        <label for="importJsonFile" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer flex items-center gap-1.5 border border-slate-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Importar
+          <input type="file" id="importJsonFile" accept=".json" class="hidden">
+        </label>
+        <button id="btnNewClient" class="text-xs sm:text-sm font-bold px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Cadastrar Cliente
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Hero / Stats Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Total de Estabelecimentos</span>
+        <div class="text-2xl font-black text-white mt-1" id="statTotalClients">0</div>
+      </div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Modo WhatsApp Direto</span>
+        <div class="text-2xl font-black text-emerald-400 mt-1" id="statWhatsAppMode">0</div>
+      </div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Modo Formulário Interno</span>
+        <div class="text-2xl font-black text-blue-400 mt-1" id="statFormMode">0</div>
+      </div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Compliance Google</span>
+        <div class="text-xs font-semibold text-emerald-300 mt-2 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Gating com link de saída
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+      <div class="relative w-full sm:w-96">
+        <input type="text" id="searchInput" placeholder="Buscar por nome, slug ou WhatsApp..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <div class="flex items-center space-x-2 text-xs text-slate-400">
+        <span>Origem dos Dados:</span>
+        <span id="dataStorageBadge" class="px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 font-mono">
+          Local / JSON
+        </span>
+      </div>
+    </div>
+
+    <!-- Clients Grid -->
+    <div id="clientsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected dynamically by admin.js -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyClientsState" class="hidden text-center py-16 bg-slate-800/40 border border-slate-800 rounded-3xl p-8">
+      <div class="w-16 h-16 bg-slate-800 text-slate-500 rounded-2xl mx-auto flex items-center justify-center mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-200 mb-1">Nenhum cliente cadastrado</h3>
+      <p class="text-xs text-slate-400 max-w-sm mx-auto mb-6">
+        Comece adicionando seu primeiro cliente para gerar o link e o QR Code de avaliação.
+      </p>
+      <button onclick="AdminApp.openClientModal()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition">
+        Cadastrar Primeiro Cliente
+      </button>
+    </div>
+
+  </main>
+
+  <!-- MODAL: ADD / EDIT CLIENT -->
+  <div id="clientModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-slide-up">
+      <div class="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
+        <h3 id="modalTitle" class="text-lg font-bold text-white">Cadastrar Novo Cliente</h3>
+        <button type="button" onclick="AdminApp.closeClientModal()" class="text-slate-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="clientForm" class="p-6 space-y-4">
+        <input type="hidden" id="editOriginalSlug" value="">
+
+        <!-- Name & Slug -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa <span class="text-rose-400">*</span></label>
+            <input type="text" id="inputName" required placeholder="Ex: Pizzaria Bella Napoli" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Identificador / Slug da URL <span class="text-rose-400">*</span></label>
+            <input type="text" id="inputSlug" required placeholder="pizzaria-bella-napoli" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-mono text-blue-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <span class="text-[11px] text-slate-500 mt-1 block">Ficará: <code id="slugPreview" class="text-slate-400">?cliente=...</code></span>
+          </div>
+        </div>
+
+        <!-- Logo Upload / URL -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Logotipo da Empresa</label>
+          
+          <div class="flex items-center gap-4 bg-slate-800/80 border border-slate-700 rounded-2xl p-3.5">
+            <!-- Preview Box -->
+            <div id="logoPreviewBox" class="w-16 h-16 rounded-xl border border-dashed border-slate-600 bg-slate-900/60 flex items-center justify-center flex-shrink-0 overflow-hidden relative group">
+              <img id="logoPreviewImg" src="" alt="Preview" class="w-full h-full object-cover hidden">
+              <div id="logoPreviewEmpty" class="text-slate-500 text-center p-1">
+                <svg class="w-6 h-6 mx-auto mb-0.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="text-[9px] block leading-none">Sem logo</span>
+              </div>
+            </div>
+
+            <!-- Upload Controls -->
+            <div class="flex-1 space-y-1.5">
+              <div class="flex items-center gap-2">
+                <label for="inputLogoFile" class="cursor-pointer inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition">
+                  <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                  </svg>
+                  Escolher do Computador
+                  <input type="file" id="inputLogoFile" accept="image/png, image/jpeg, image/webp, image/svg+xml" class="hidden">
+                </label>
+                <button type="button" id="btnRemoveLogo" class="hidden px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-rose-600/80 text-slate-300 hover:text-white text-xs transition">
+                  Remover
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                Formatos aceitos: PNG, JPG, WebP ou SVG (otimizado automaticamente).
+              </p>
+              
+              <!-- Toggle URL Option -->
+              <details class="text-[11px] text-slate-400 pt-0.5">
+                <summary class="cursor-pointer hover:text-blue-400 select-none">Ou colar link web direto (URL)</summary>
+                <div class="mt-1.5">
+                  <input type="url" id="inputLogo" placeholder="https://exemplo.com/logo.png" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </details>
+            </div>
+          </div>
+          <!-- Hidden storage for actual data/base64 -->
+          <input type="hidden" id="currentLogoData" value="">
+        </div>
+
+        <!-- Google Review URL -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Link de Avaliação do Google (Google Review URL) <span class="text-rose-400">*</span></label>
+          <input type="url" id="inputGoogleUrl" required placeholder="https://search.google.com/local/writereview?placeid=..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <span class="text-[11px] text-slate-500 mt-1 block">Link direto onde o Google abre o modal de 5 estrelas.</span>
+        </div>
+
+        <!-- WhatsApp & Email -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp do Gerente (com DDD) <span class="text-rose-400">*</span></label>
+            <input type="text" id="inputWhatsApp" required placeholder="5511999998888" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <span class="text-[11px] text-slate-500 mt-1 block">Ex: 55 + DDD + Número (sem traços/espaços)</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail do Gerente (opcional)</label>
+            <input type="email" id="inputEmail" placeholder="gerente@estabelecimento.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Contact Mode for 1-3 Stars -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Modo de Tratativa para Notas Críticas (1 a 3 estrelas) <span class="text-rose-400">*</span></label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
+            <label class="flex items-center p-3 rounded-xl border border-slate-700 bg-slate-800/80 cursor-pointer hover:border-blue-500 transition">
+              <input type="radio" name="contactMode" value="whatsapp" class="text-blue-500 focus:ring-blue-500 h-4 w-4">
+              <div class="ml-3">
+                <span class="text-xs font-bold text-slate-200 block">WhatsApp Direto</span>
+                <span class="text-[11px] text-slate-400">Botão que abre conversa com texto pré-definido.</span>
+              </div>
+            </label>
+            <label class="flex items-center p-3 rounded-xl border border-slate-700 bg-slate-800/80 cursor-pointer hover:border-blue-500 transition">
+              <input type="radio" name="contactMode" value="form" checked class="text-blue-500 focus:ring-blue-500 h-4 w-4">
+              <div class="ml-3">
+                <span class="text-xs font-bold text-slate-200 block">Formulário Interno</span>
+                <span class="text-[11px] text-slate-400">Coleta nome, telefone e relato na própria página.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Optional: Webhook URL -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Webhook de Notificação (Opcional - n8n / Make / Zapier / CRM)</label>
+          <input type="url" id="inputWebhook" placeholder="https://seu-servidor.com/webhook/reviews" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Optional: Custom Welcome Message -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Pergunta Inicial Customizada (Opcional)</label>
+          <input type="text" id="inputWelcome" placeholder="Como foi sua experiência com a gente hoje?" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="pt-4 border-t border-slate-800 flex items-center justify-end space-x-3">
+          <button type="button" onclick="AdminApp.closeClientModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition">
+            Salvar Cliente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: QR CODE DISPLAY & DOWNLOAD -->
+  <div id="qrModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-slide-up text-center p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-bold text-white" id="qrModalClientName">QR Code de Avaliação</h3>
+        <button onclick="AdminApp.closeQrModal()" class="text-slate-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- High Res QR Code Canvas Container -->
+      <div class="bg-white p-5 rounded-2xl inline-block shadow-inner mb-4 mx-auto" id="qrCodeContainer">
+        <!-- Rendered by QRCode.js -->
+      </div>
+
+      <div class="text-xs text-slate-400 mb-5 break-all font-mono px-2" id="qrCodeUrlDisplay">
+        https://...
+      </div>
+
+      <div class="space-y-2">
+        <button id="btnDownloadQr" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Baixar Imagem PNG (Alta Resolução)
+        </button>
+        <button onclick="AdminApp.copyCurrentQrLink()" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Copiar Link Direto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-800 border border-slate-700 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
+      <span id="toastIcon">✅</span>
+      <span id="toastMsg">Operação realizada com sucesso</span>
+    </div>
+  </div>
+
+  <!-- Admin Application Logic -->
+  <script src="js/admin.js"></script>
+</body>
+</html>

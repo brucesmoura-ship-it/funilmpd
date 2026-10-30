@@ -1,0 +1,41 @@
+[
+  {
+    "slug": "pizzaria-do-joao",
+    "name": "Pizzaria do João & Forneria",
+    "logo": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&auto=format&fit=crop&q=80",
+    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+    "whatsapp": "5511987654321",
+    "email": "gerente@pizzariadojoao.com.br",
+    "contactMode": "form",
+    "webhookUrl": "",
+    "welcomeMessage": "Como foi sua experiência com a nossa pizza hoje?",
+    "active": true,
+    "createdAt": "2026-10-29T10:00:00Z"
+  },
+  {
+    "slug": "dr-bruno-odontologia",
+    "name": "Dr. Bruno - Odontologia Especializada",
+    "logo": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=200&auto=format&fit=crop&q=80",
+    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+    "whatsapp": "5519991234567",
+    "email": "contato@drbruno.com.br",
+    "contactMode": "whatsapp",
+    "webhookUrl": "",
+    "welcomeMessage": "Como foi seu atendimento na nossa clínica hoje?",
+    "active": true,
+    "createdAt": "2026-10-29T11:30:00Z"
+  },
+  {
+    "slug": "studio-vip-beleza",
+    "name": "Studio VIP Salão & Spa",
+    "logo": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&auto=format&fit=crop&q=80",
+    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+    "whatsapp": "5521998877665",
+    "email": "atendimento@studiovip.com.br",
+    "contactMode": "form",
+    "webhookUrl": "",
+    "welcomeMessage": "Conte para nós: como foi sua experiência conosco?",
+    "active": true,
+    "createdAt": "2026-10-29T12:15:00Z"
+  }
+]

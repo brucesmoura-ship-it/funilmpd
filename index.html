@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Avaliação de Experiência</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            },
+            gold: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Confetti script -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 min-h-screen text-slate-800 flex flex-col justify-between p-4 antialiased selection:bg-blue-500 selection:text-white">
+
+  <!-- Header / Navigation Bar (Subtle) -->
+  <header class="w-full max-w-md mx-auto pt-2 pb-4 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+        <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+        Canal Oficial
+      </span>
+    </div>
+    <div id="headerCompanyBadge" class="text-xs text-slate-400 font-medium truncate max-w-[180px]">
+      Verificando...
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-md mx-auto my-auto">
+
+    <!-- Loading State -->
+    <div id="loadingState" class="glass-panel rounded-3xl p-8 shadow-xl border border-white/60 text-center animate-pulse">
+      <div class="w-20 h-20 bg-slate-200 rounded-full mx-auto mb-4"></div>
+      <div class="h-6 bg-slate-200 rounded-lg w-3/4 mx-auto mb-3"></div>
+      <div class="h-4 bg-slate-200 rounded-lg w-1/2 mx-auto"></div>
+    </div>
+
+    <!-- Error State: Client Not Found -->
+    <div id="errorState" class="hidden glass-panel rounded-3xl p-8 shadow-2xl border border-rose-100 text-center">
+      <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl mx-auto flex items-center justify-center mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 mb-2">Estabelecimento não encontrado</h2>
+      <p class="text-sm text-slate-600 mb-6">
+        O link que você acessou não contém um identificador de cliente válido. Se você é o administrador, configure seus clientes no painel.
+      </p>
+      <a href="admin.html" class="inline-flex items-center justify-center w-full px-5 py-3 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition shadow-lg shadow-slate-900/10">
+        Acessar Painel de Controle
+      </a>
+    </div>
+
+    <!-- STEP 1: Main Rating Card -->
+    <div id="stepRating" class="hidden glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/80 animate-slide-up">
+      <!-- Client Logo & Info -->
+      <div class="text-center mb-6">
+        <div id="logoContainer" class="relative inline-block mb-3">
+          <img id="clientLogo" src="" alt="Logo" class="w-20 h-20 object-cover rounded-2xl shadow-md border-2 border-white mx-auto">
+          <div id="logoPlaceholder" class="hidden w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white text-2xl font-bold rounded-2xl shadow-md border-2 border-white mx-auto flex items-center justify-center">
+            E
+          </div>
+        </div>
+        <h1 id="clientName" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+          Nome da Empresa
+        </h1>
+        <p id="clientWelcome" class="text-sm text-slate-500 mt-1 max-w-xs mx-auto">
+          Como foi sua experiência com a gente hoje?
+        </p>
+      </div>
+
+      <!-- Rating Section -->
+      <div class="bg-slate-50/80 rounded-2xl p-5 border border-slate-100 text-center mb-6">
+        <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-3">
+          Toque para avaliar
+        </span>
+
+        <!-- 5 Stars Row -->
+        <div class="flex items-center justify-center space-x-1 sm:space-x-2 my-2" id="starContainer">
+          <button type="button" data-star="1" class="star-btn p-1.5 focus:outline-none text-slate-300 hover:text-gold-500 transition-colors" title="Péssimo (1 estrela)">
+            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+          </button>
+          <button type="button" data-star="2" class="star-btn p-1.5 focus:outline-none text-slate-300 hover:text-gold-500 transition-colors" title="Ruim (2 estrelas)">
+            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+          </button>
+          <button type="button" data-star="3" class="star-btn p-1.5 focus:outline-none text-slate-300 hover:text-gold-500 transition-colors" title="Regular (3 estrelas)">
+            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+          </button>
+          <button type="button" data-star="4" class="star-btn p-1.5 focus:outline-none text-slate-300 hover:text-gold-500 transition-colors" title="Bom (4 estrelas)">
+            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+          </button>
+          <button type="button" data-star="5" class="star-btn p-1.5 focus:outline-none text-slate-300 hover:text-gold-500 transition-colors" title="Excelente (5 estrelas)">
+            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Rating Feedback Label -->
+        <div id="ratingLabel" class="h-6 text-sm font-semibold text-slate-400 mt-2 transition-all">
+          Selecione as estrelas acima
+        </div>
+      </div>
+
+      <!-- Footer Help Info -->
+      <div class="text-center text-xs text-slate-400 flex items-center justify-center space-x-1">
+        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span>Leva menos de 30 segundos. Sua opinião é valiosa!</span>
+      </div>
+    </div>
+
+    <!-- STEP 2 - POSITIVE FLOW (4 or 5 Stars) -->
+    <div id="stepPositive" class="hidden glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-100 text-center animate-slide-up">
+      <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-teal-400 text-white rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/20 animate-float">
+        <span class="text-3xl">🎉</span>
+      </div>
+
+      <div class="flex justify-center items-center space-x-1 text-gold-500 mb-2">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </div>
+
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Muito obrigado!</h2>
+      <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+        Ficamos muito felizes que você teve uma ótima experiência! Poderia compartilhar sua nota no <strong>Google</strong>? Leva menos de 30 segundos e nos ajuda imensamente!
+      </p>
+
+      <!-- Main Action Button -->
+      <a id="btnGoogleReview" href="#" target="_blank" rel="noopener noreferrer" class="group relative flex items-center justify-center w-full px-6 py-4 rounded-2xl bg-white border-2 border-slate-200 text-slate-800 font-bold text-base shadow-lg hover:border-blue-500 hover:shadow-xl transition-all duration-200">
+        <!-- Google Logo SVG -->
+        <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Publicar Avaliação no Google</span>
+        <svg class="w-5 h-5 ml-2 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </a>
+
+      <!-- Auto redirect countdown -->
+      <div id="redirectCounterBox" class="mt-4 text-xs text-slate-400 flex items-center justify-center space-x-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+        <span>Redirecionando automaticamente em <strong id="countdownSeconds" class="text-slate-700 font-bold">4</strong>s...</span>
+        <button id="btnCancelRedirect" class="underline hover:text-slate-600 text-xs">Pausar</button>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100">
+        <button onclick="ReviewApp.resetRating()" class="text-xs text-slate-400 hover:text-slate-600 transition">
+          ← Voltar e alterar minha nota
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2 - CRITICAL / PRIVATE FLOW (1 to 3 Stars) -->
+    <div id="stepCritical" class="hidden glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-100 animate-slide-up">
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl mx-auto flex items-center justify-center mb-3">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 mb-1">Queremos ouvir você</h2>
+        <p class="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+          Sentimos muito que sua experiência não tenha sido 100%. Por favor, conte o que aconteceu para que a gerência possa resolver com prioridade:
+        </p>
+      </div>
+
+      <!-- OPTION A: DIRECT WHATSAPP BUTTON (if client contactMode == 'whatsapp') -->
+      <div id="modeWhatsApp" class="space-y-3">
+        <a id="btnWhatsAppDirect" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-full px-5 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition-all duration-200">
+          <!-- WhatsApp Icon -->
+          <svg class="w-5 h-5 mr-2.5 fill-current" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.076-2.115-.512-1.815-.752-2.973-2.613-3.063-2.733-.09-.12-0.736-.98-0.736-1.868 0-.888.465-1.325.63-1.505.165-.18.36-.225.48-.225.12 0 .24.001.345.006.111.005.259-.042.405.309.15.36.51 1.246.555 1.336.045.09.075.195.015.315-.06.12-.09.195-.18.3-.09.105-.19.234-.27.315-.09.09-.185.188-.08.368.105.18.468.772 1.004 1.25.69.615 1.272.805 1.452.895.18.09.285.075.39-.045.105-.12.45-.525.57-.705.12-.18.24-.15.405-.09.165.06 1.05.495 1.23.585.18.09.3.135.345.21.045.075.045.435-.099.84zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.436 5.176L2 22l4.981-1.306A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+          </svg>
+          <span>Falar com o Gerente no WhatsApp</span>
+        </a>
+      </div>
+
+      <!-- OPTION B: INTERNAL FEEDBACK FORM (if client contactMode == 'form') -->
+      <form id="modeForm" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu Nome (opcional)</label>
+          <input type="text" id="feedbackName" placeholder="Ex: Maria Santos" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white/70">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seu WhatsApp / Telefone</label>
+          <input type="tel" id="feedbackPhone" placeholder="(XX) 99999-9999" required class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white/70">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">O que podemos melhorar? <span class="text-rose-500">*</span></label>
+          <textarea id="feedbackMessage" rows="3" required placeholder="Conte brevemente o que aconteceu..." class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white/70 resize-none"></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmitFeedback" class="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center space-x-2">
+          <span>Enviar Mensagem à Gerência</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Feedback Sent Success Card -->
+      <div id="feedbackSuccess" class="hidden text-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center mb-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900 mb-1">Recebemos sua mensagem!</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Nossa gerência já foi notificada e entrará em contato para resolver sua situação. Agradecemos por nos ajudar a melhorar.
+        </p>
+      </div>
+
+      <!-- Compliance Link (Google Guidelines Compliance) -->
+      <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+        <p class="text-[11px] text-slate-400">
+          Sua opinião é sempre livre. 
+          <a id="complianceGoogleLink" href="#" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-700 underline font-medium transition">
+            Deseja avaliar publicamente no Google mesmo assim?
+          </a>
+        </p>
+        <button onclick="ReviewApp.resetRating()" class="text-xs text-slate-400 hover:text-slate-600 transition mt-3 block mx-auto">
+          ← Voltar e alterar nota
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-md mx-auto text-center py-4 text-[11px] text-slate-400">
+    <div class="flex items-center justify-center space-x-2">
+      <span>Sistema de Feedback Seguro</span>
+      <span>•</span>
+      <a href="admin.html" class="hover:text-slate-600 underline">Acesso Gerencial</a>
+    </div>
+  </footer>
+
+  <!-- Application JS -->
+  <script src="js/app.js"></script>
+</body>
+</html>
